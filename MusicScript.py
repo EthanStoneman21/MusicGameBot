@@ -6,11 +6,14 @@ from dotenv import load_dotenv
 load_dotenv()
 token = os.getenv("DISCORD_TOKEN")
 
-song = "b"
-artist = "b"
+song = "Freddie Mercury"
+artist = "Onslow"
+link = ""
+answer = (f"[{song} by {artist}]({link})")
 
 guesses = {1429642609177006080}
 leaderboard = {1429645537635991583}
+answer_id = {1429642569574518926}
 
 class MyClient(discord.Client):
     def __init__ (self, *, intents):
@@ -60,8 +63,15 @@ class MyClient(discord.Client):
                         new_content = "\n".join(new_lines)
                         await leader_message.edit(content=new_content)
 
+                        #put answer into answer channel
+                        answer_channel = self.get_channel(list(answer_id)[0])
+                        await answer_channel.send(f"Answer:\n {answer}")
+
                 elif guessed_artist == artist.lower():
                     await message.add_reaction("🟦")
+
+                #elif guessed_song != song.lower() and guessed_artist != artist.lower():
+                    #await message.add_reaction("🟥")
 
 
 
