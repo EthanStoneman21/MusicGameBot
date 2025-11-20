@@ -5,15 +5,16 @@ from dotenv import load_dotenv
 #load token
 load_dotenv()
 token = os.getenv("DISCORD_TOKEN")
+guesses = int(os.getenv("GUESSES"))
+leaderboard = int(os.getenv("LEADERBOARD"))
+answer_id = int(os.getenv("ANSWER_ID"))
+leaderboard_med = int(os.getenv("LEADERBOARD_MED"))
 
-song = "Freddie Mercury"
-artist = "Onslow"
-link = ""
+song = os.getenv("SONG")
+main_artist = os.getenv("MAIN_ARTIST")
+artist = os.getenv("ARTIST")
+link = os.getenv("LINK")
 answer = (f"[{song} by {artist}]({link})")
-
-guesses = {1429642609177006080}
-leaderboard = {1429645537635991583}
-answer_id = {1429642569574518926}
 
 class MyClient(discord.Client):
     def __init__ (self, *, intents):
@@ -28,7 +29,7 @@ class MyClient(discord.Client):
             return
 
         #react if song is correct
-        if message.channel.id in guesses:
+        if message.channel.id == guesses:
             guess_parts = message.content.lower().split(" by ")
             if len(guess_parts) == 2:
                 guessed_song = guess_parts[0].strip()
@@ -39,8 +40,8 @@ class MyClient(discord.Client):
                         self.winner_declared = True
 
                         #update leaderboard
-                        leader_channel = self.get_channel(list(leaderboard)[0])
-                        leader_message = await leader_channel.fetch_message(1429868226556465172)
+                        leader_channel = self.get_channel(leaderboard)
+                        leader_message = await leader_channel.fetch_message(leaderboard_med)
 
                         user_tag = message.author.mention
                         lines = leader_message.content.splitlines()
@@ -64,10 +65,19 @@ class MyClient(discord.Client):
                         await leader_message.edit(content=new_content)
 
                         #put answer into answer channel
-                        answer_channel = self.get_channel(list(answer_id)[0])
+                        answer_channel = self.get_channel(answer_id)
                         await answer_channel.send(f"Answer:\n {answer}")
+                        await answer_channel.send(f"Congratulations:\n {user_tag} 🎉")
 
-                elif guessed_artist == artist.lower():
+                        with open("songs.txt", "a") as file:
+                            file.write(f"\n{song.lower()} {artist.lower()}")
+                            file.close()
+
+                elif guessed_song.lower() == song and main_artist.lower() in guessed_artist:
+                    await message.add_reaction("🟦")
+                    await message.add_reaction("🟪")
+
+                elif main_artist.lower() in guessed_artist:
                     await message.add_reaction("🟦")
 
                 #elif guessed_song != song.lower() and guessed_artist != artist.lower():
